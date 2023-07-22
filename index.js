@@ -1,7 +1,7 @@
 const inquirer = require("inquirer");
 const mysql = require("mysql2/promise");
 const logo = require("asciiart-logo");
-
+// .env & connect to db
 require("dotenv").config();
 const dbUser = process.env.DB_USER;
 const dbPassword = process.env.DB_PASSWORD;
@@ -10,6 +10,7 @@ const dbName = process.env.DB_NAME;
 async function dbConnection(select) {
   try {
     const db = await mysql.createConnection({
+    //  used 127.0.0.1 instead of localhost due to MacOS issue
       host: "127.0.0.1",
       user: dbUser,
       password: dbPassword,
@@ -18,13 +19,14 @@ async function dbConnection(select) {
 
     let returnedRowsFromDb = [];
     let returnedOutputFromInq = [];
-    
+    // switch cases
     switch (select) {
+    // returns all department
       case "View All Departments":
         returnedRowsFromDb = await db.query("SELECT * FROM department");
         console.table(returnedRowsFromDb[0]); 
         break;
-
+    // returns all roles with id, title, salary & dept
       case "View All Roles":
         returnedRowsFromDb = await db.query(`
                 SELECT
@@ -37,7 +39,7 @@ async function dbConnection(select) {
                 `);
         console.table(returnedRowsFromDb[0]); 
         break;
-
+        // returns all employees with first/last name, title, dept & mgr
         case "View All Employees":
             returnedRowsFromDb = await db.query(`
               SELECT
@@ -55,6 +57,7 @@ async function dbConnection(select) {
             `);
             console.table(returnedRowsFromDb[0]);
             break;
+          //  add dept to db
             case "Add Department":
               returnedOutputFromInq = await inquirer.prompt([
               {
@@ -82,6 +85,7 @@ async function dbConnection(select) {
             console.log("Error adding department:", error);
             }
             break;
+            // adds role with name, salary & dept
             case "Add Role":
               returnedOutputFromInq = await inquirer.prompt([
                 {
@@ -118,6 +122,7 @@ async function dbConnection(select) {
               );
       
               break;
+            //  adds emp with first/last name, role, mgr
               case "Add Employee":
                 returnedOutputFromInq = await inquirer.prompt([
                   {
@@ -159,7 +164,7 @@ async function dbConnection(select) {
                 );
         
                 break;
-        
+        // updated emp role to db
               case "Update Employee Role":
                 currentEmployees = await db.query(`
                         SELECT id, first_name, last_name FROM employee;`);
@@ -209,7 +214,7 @@ async function dbConnection(select) {
     console.log(err);
   }
 }
-
+// employee manager logo
 console.log(logo({ name: "Employee Manager" }).render());
 
 function userPrompt() {
@@ -232,6 +237,7 @@ function userPrompt() {
         ],
       },
     ])
+  //  exit with logo
     .then(async (res) => {
       await dbConnection(res.select);
       res.select === "Exit" ? (console.table(logo({
