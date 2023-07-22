@@ -118,7 +118,93 @@ async function dbConnection(select) {
               );
       
               break;
-    }
+              case "Add Employee":
+                returnedOutputFromInq = await inquirer.prompt([
+                  {
+                    name: "first_name",
+                    message: "What is the employees first name?",
+                  },
+                  {
+                    name: "last_name",
+                    message: "What is the employees last name?",
+                  },
+                  {
+                    name: "role",
+                    message: "What is the employees role?",
+                  },
+                  {
+                    name: "manager",
+                    message: "Who is the employees manager?",
+                  },
+                ]);
+        
+                const allRoles = await db.query("SELECT * FROM role;");
+        
+                const allManagers = await db.query(
+                  "SELECT * FROM employee where manager_id is null;"
+                );
+        
+                const { first_name, last_name, role, manager } = returnedOutputFromInq;
+        
+                const role_data = allRoles[0].filter((r) => {
+                  return r.title === role;
+                });
+        
+                const manager_data = allManagers[0].filter((m) => {
+                  return `${m.first_name} ${m.last_name}` === manager;
+                });
+        
+                returnedRowsFromDb = await db.query(
+                  `INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ('${first_name}', '${last_name}', ${role_data[0].id}, ${manager_data[0].id})`
+                );
+        
+                break;
+        
+              case "Update Employee Role":
+                currentEmployees = await db.query(`
+                        SELECT id, first_name, last_name FROM employee;`);
+        
+                currentRoles = await db.query(`
+                        SELECT id, title FROM role;`);
+        
+                const employeeList = currentEmployees[0].map((employee) => {
+                  return {
+                    name: `${employee["first_name"]} ${employee.last_name}`,
+                    value: employee.id,
+                  };
+                });
+        
+                const roleList = currentRoles[0].map((role) => {
+                  return {
+                    name: role.title,
+                    value: role.id,
+                  };
+                });
+        
+                returnedOutputFromInq = await inquirer.prompt([
+                  {
+                    type: "list",
+                    name: "employeeId",
+                    message: "Which employees role do you want to update?",
+                    choices: employeeList,
+                  },
+                  {
+                    type: "list",
+                    name: "newRole",
+                    message: "Which role do you want to assign the selected employee?",
+                    choices: roleList,
+                  },
+                ]);
+        
+                  console.log("Updated employees role");
+                returnedRowsFromDb = await db.query(`
+                            UPDATE employee
+                            SET role_id = ${returnedOutputFromInq.newRole}
+                            WHERE employee.id = ${returnedOutputFromInq.employeeId};`);
+        
+                break;
+        
+            }
   } catch (err) {
     console.log(err);
   }

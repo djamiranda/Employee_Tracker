@@ -1,8 +1,7 @@
 # Employee_Tracker
   
-  
   ## Description:
-  
+  Employee Tracker Content Management System developed to easily manage employees, roles, salaries & departments & roles.
 
   ![screenshot.png from assets/images should be here](./assets/images/screenshot.png)
   
@@ -18,3 +17,6 @@
   
   Repo:
   [https://github.com/djamiranda/Employee_Tracker](https://github.com/djamiranda/Employee_Tracker)
+
+   Video:
+  [Google Drive Link](https://drive.google.com/file/d/1XUssA2OYMqMYjM-EKrhpAkvZ7oRJL4Fu/view?usp=sharing)
