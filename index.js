@@ -55,7 +55,69 @@ async function dbConnection(select) {
             `);
             console.table(returnedRowsFromDb[0]);
             break;
-       
+            case "Add Department":
+              returnedOutputFromInq = await inquirer.prompt([
+              {
+              name: "department",
+              message: "What is the name of the department?",
+              },
+              ]);
+              try {
+              const { department } = returnedOutputFromInq;
+      
+              const existingDepartment = await db.query(
+              `SELECT * FROM department WHERE name = '${department}'`
+              );
+      
+              if (existingDepartment[0].length > 0) {
+            console.log("Department already exists");
+            break;
+              }
+      
+            returnedRowsFromDb = await db.query(
+            `INSERT INTO department (name) VALUES ('${department}')`
+              );
+            console.log("Added", department, "to the database");
+            } catch (error) {
+            console.log("Error adding department:", error);
+            }
+            break;
+            case "Add Role":
+              returnedOutputFromInq = await inquirer.prompt([
+                {
+                  name: "roleName",
+                  message: "What is the name of the role?",
+                },
+                {
+                  name: "roleSalary",
+                  message: "What is the salary of the role?",
+                },
+                {
+                  name: "roleDepartment",
+                  message: "Which department does the role belong to?",
+                },
+              ]);
+      
+              const { roleName, roleSalary, roleDepartment } = returnedOutputFromInq;
+      
+              const returnDepartmentId = await db.query(
+                'SELECT IFNULL((SELECT id FROM department WHERE name = ?), "Department Does Not Exist")',
+                [roleDepartment]
+              );
+      
+              const [rows] = returnDepartmentId;
+              const department_id = Object.values(rows[0])[0];
+      
+              if (department_id === "Department Does Not Exist") {
+                console.log("Enter a Role in an Existing Department!");
+                break;
+              }
+      
+              returnedRowsFromDb = await db.query(
+                ` INSERT INTO role (title, salary, department_id) VALUES ('${roleName}', '${roleSalary}', '${department_id}');`
+              );
+      
+              break;
     }
   } catch (err) {
     console.log(err);
